@@ -7,7 +7,10 @@ app = Flask(__name__)
 def home():
     if request.method == "POST":
         job_description = request.form["job_description"]
+        resume = request.files['resume']
         print(job_description)
+        resume.save("uploads/" + resume.filename)
+        print("Resume saved:", resume.filename)
     return render_template("index.html")
 
 

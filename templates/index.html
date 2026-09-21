@@ -11,8 +11,13 @@
     <div class="cotainer">
       <h1>AI Job Intelligence & Career Copilot</h1>
       <p>Your AI-powered career assistant</p>
-      <form method="post">
-        <label for="job_description">Job Description</label>
+      <form method="post" enctype="multipart/form-data">
+        <label for="resume">Upload Your Resume</label>
+        <input type="file" id="resume" name="resume" accept=".pdf" />
+
+        <br /><br />
+
+        <label for="job_description"> Job Description </label>
 
         <textarea
           id="job_description"
