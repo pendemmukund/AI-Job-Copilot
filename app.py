@@ -19,6 +19,44 @@ def clean_text(text):
 
     return "\n".join(cleaned_lines)
 
+def extract_sections(text):
+
+    sections = {
+        "education": "",
+        "skills": "",
+        "projects": "",
+        "experience": "",
+        "certifications": ""
+    }
+
+    current_section = None
+
+    lines = text.splitlines()
+
+    for line in lines:
+
+        line_lower = line.lower().strip()
+
+        if line_lower == "education":
+            current_section = "education"
+
+        elif line_lower == "skills":
+            current_section = "skills"
+
+        elif line_lower == "projects":
+            current_section = "projects"
+
+        elif line_lower == "experience":
+            current_section = "experience"
+
+        elif line_lower == "certifications":
+            current_section = "certifications"
+
+        elif current_section:
+            sections[current_section] += line + "\n"
+
+    return sections
+
 
 @app.route("/", methods=["GET", "POST"])
 def home():
