@@ -5,8 +5,11 @@ import os
 app = Flask(__name__)
 
 
-# Function to clean extracted text
+# -------------------------------
+# Clean Text
+# -------------------------------
 def clean_text(text):
+
     lines = text.splitlines()
 
     cleaned_lines = []
@@ -19,6 +22,10 @@ def clean_text(text):
 
     return "\n".join(cleaned_lines)
 
+
+# -------------------------------
+# Extract Resume Sections
+# -------------------------------
 def extract_sections(text):
 
     sections = {
@@ -58,56 +65,159 @@ def extract_sections(text):
     return sections
 
 
+# -------------------------------
+# Extract Job Skills
+# -------------------------------
+def extract_job_skills(job_description):
+
+    required_skills = []
+    preferred_skills = []
+
+    lines = job_description.splitlines()
+
+    current_section = None
+
+    for line in lines:
+
+        line_lower = line.lower().strip()
+
+        if line_lower == "required skills:":
+            current_section = "required"
+
+        elif line_lower == "good to have:":
+            current_section = "preferred"
+
+        elif current_section and line.strip():
+
+            if current_section == "required":
+                required_skills.append(line.strip())
+
+            elif current_section == "preferred":
+                preferred_skills.append(line.strip())
+
+    return {
+        "required_skills": required_skills,
+        "preferred_skills": preferred_skills
+    }
+
+
+# -------------------------------
+# Home Route
+# -------------------------------
 @app.route("/", methods=["GET", "POST"])
 def home():
 
     if request.method == "POST":
 
-        # Get job description from the form
-        job_description = request.form["job_description"]
+        # Debug: See what the browser sends
+        print("\n========== FORM DATA ==========")
+        print(request.form)
 
-        # Clean job description
+        # Get Job Description
+        job_description = request.form.get("job_description", "")
+
+        print("\n========== JOB DESCRIPTION ==========")
+        print(job_description)
+
+        # Check Job Description
+        if not job_description.strip():
+            return "Please enter a job description."
+
+        # Clean Job Description
         job_description = clean_text(job_description)
 
-        # Get uploaded resume
-        resume = request.files["resume"]
 
-        # Check whether a file was selected
-        if resume.filename == "":
+        # Get Resume
+        resume = request.files.get("resume")
+
+        if not resume or resume.filename == "":
             return "Please select a resume."
 
-        # Create file path
+
+        # Create uploads folder
+        os.makedirs("uploads", exist_ok=True)
+
+
+        # Save Resume
         file_path = os.path.join("uploads", resume.filename)
 
-        # Save resume
         resume.save(file_path)
 
-        print("Resume saved:", file_path)
+        print("\nResume saved:", file_path)
 
-        # Read the PDF
+
+        # -------------------------------
+        # Read PDF
+        # -------------------------------
+
         reader = PdfReader(file_path)
 
-        # Extract text from all pages
         text = ""
 
         for page in reader.pages:
+
             page_text = page.extract_text()
 
             if page_text:
                 text += page_text
 
-        # Clean extracted resume text
+
+        # Clean Resume Text
         text = clean_text(text)
 
-        # Display the results in terminal
-        print("\n========== JOB DESCRIPTION ==========")
-        print(job_description)
+
+        # -------------------------------
+        # Extract Resume Sections
+        # -------------------------------
+
+        resume_sections = extract_sections(text)
+
+
+        # -------------------------------
+        # Extract Job Skills
+        # -------------------------------
+
+        job_skills = extract_job_skills(job_description)
+
+
+        # -------------------------------
+        # Display Results in Terminal
+        # -------------------------------
 
         print("\n========== RESUME TEXT ==========")
         print(text)
 
+
+        print("\n========== RESUME SECTIONS ==========")
+
+        for section, content in resume_sections.items():
+
+            print(f"\n--- {section.upper()} ---")
+            print(content)
+
+
+        print("\n========== JOB SKILLS ==========")
+
+        print("\nRequired Skills:")
+
+        for skill in job_skills["required_skills"]:
+            print(skill)
+
+
+        print("\nPreferred Skills:")
+
+        for skill in job_skills["preferred_skills"]:
+            print(skill)
+
+
+        print("\n====================================")
+
+
     return render_template("index.html")
 
 
+# -------------------------------
+# Run Application
+# -------------------------------
 if __name__ == "__main__":
     app.run(debug=True)
