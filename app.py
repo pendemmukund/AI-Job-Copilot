@@ -5,13 +5,17 @@ import os
 app = Flask(__name__)
 
 
-# Clean the extracted text by removing empty lines and extra spaces
+# -----------------------------
+# Clean text
+# -----------------------------
 def clean_text(text):
 
     lines = text.splitlines()
+
     cleaned_lines = []
 
     for line in lines:
+
         line = line.strip()
 
         if line:
@@ -20,7 +24,9 @@ def clean_text(text):
     return "\n".join(cleaned_lines)
 
 
-# Extract the important sections from the resume
+# -----------------------------
+# Extract resume sections
+# -----------------------------
 def extract_sections(text):
 
     sections = {
@@ -32,6 +38,7 @@ def extract_sections(text):
     }
 
     current_section = None
+
     lines = text.splitlines()
 
     for line in lines:
@@ -39,113 +46,210 @@ def extract_sections(text):
         line_lower = line.lower().strip()
 
         if line_lower == "education":
+
             current_section = "education"
 
-        elif line_lower == "skills":
+        elif line_lower in ["skills", "technical skills"]:
+
             current_section = "skills"
 
         elif line_lower == "projects":
+
             current_section = "projects"
 
-        elif line_lower == "experience":
+        elif line_lower in ["experience", "professional experience"]:
+
             current_section = "experience"
 
-        elif line_lower == "certifications":
+        elif line_lower in [
+            "certifications",
+            "certifications & leadership"
+        ]:
+
             current_section = "certifications"
 
         elif current_section:
+
             sections[current_section] += line + "\n"
 
     return sections
 
 
-# Clean individual skill names so they can be compared easily
+# -----------------------------
+# Normalize a skill
+# -----------------------------
 def clean_skill(skill):
 
     skill = skill.strip()
 
-    # Remove the '-' from bullet points
-    if skill.startswith("-"):
-        skill = skill[1:].strip()
+    # Remove bullet symbols
+    skill = skill.lstrip("-•*").strip()
 
     skill_lower = skill.lower()
 
-    # Convert different descriptions into common skill names
+    # Python
     if "python" in skill_lower:
+
         return "Python"
 
+    # Flask
     elif "flask" in skill_lower:
+
         return "Flask"
 
-    elif "sql" in skill_lower:
+    # SQL
+    elif (
+        skill_lower == "sql"
+        or "sql and database" in skill_lower
+        or "sql queries" in skill_lower
+    ):
+
         return "SQL"
 
-    elif "git" in skill_lower and "github" in skill_lower:
-        return "Git/GitHub"
+    # REST API
+    elif "rest api" in skill_lower or "rest apis" in skill_lower:
 
-    elif "object-oriented" in skill_lower:
-        return "OOP"
-
-    elif "rest" in skill_lower:
         return "REST API"
 
-    elif "html" in skill_lower and "css" in skill_lower:
+    # HTML/CSS
+    elif (
+        ("html" in skill_lower and "css" in skill_lower)
+        or "html and css" in skill_lower
+        or "html/css" in skill_lower
+    ):
+
         return "HTML/CSS"
 
-    elif "javascript" in skill_lower:
-        return "JavaScript"
+    # HTML by itself
+    elif skill_lower in ["html", "html5"]:
 
+        return "HTML/CSS"
+
+    # CSS by itself
+    elif skill_lower in ["css", "css3"]:
+
+        return "HTML/CSS"
+
+    # Git and GitHub
+    elif (
+        ("git" in skill_lower and "github" in skill_lower)
+        or "git/github" in skill_lower
+        or "git and github" in skill_lower
+    ):
+
+        return "Git/GitHub"
+
+    # Git by itself
+    elif skill_lower == "git":
+
+        return "Git/GitHub"
+
+    # GitHub by itself
+    elif skill_lower == "github":
+
+        return "Git/GitHub"
+
+    # Object-Oriented Programming
+    elif (
+        "object-oriented" in skill_lower
+        or "object oriented" in skill_lower
+        or skill_lower == "oop"
+        or "(oop)" in skill_lower
+    ):
+
+        return "OOP"
+
+    # Problem solving
+    elif (
+        "problem-solving" in skill_lower
+        or "problem solving" in skill_lower
+        or "debugging" in skill_lower
+    ):
+
+        return "Problem-Solving & Debugging"
+
+    # Pandas
     elif "pandas" in skill_lower:
+
         return "Pandas"
 
+    # NumPy
     elif "numpy" in skill_lower:
+
         return "NumPy"
 
+    # Matplotlib
+    elif "matplotlib" in skill_lower:
+
+        return "Matplotlib"
+
+    # Machine Learning
     elif "machine learning" in skill_lower:
+
         return "Machine Learning"
 
+    # LLM APIs
     elif "llm" in skill_lower:
+
         return "LLM APIs"
 
+    # JavaScript
+    elif "javascript" in skill_lower:
+
+        return "JavaScript"
+
+    # Streamlit
+    elif "streamlit" in skill_lower:
+
+        return "Streamlit"
+
+    # PyPDF2
+    elif "pypdf2" in skill_lower:
+
+        return "PyPDF2"
+
+    # SQLite
+    elif "sqlite" in skill_lower:
+
+        return "SQLite"
+
+    # MySQL
+    elif "mysql" in skill_lower:
+
+        return "MySQL"
+
+    # Gemini API
+    elif "gemini" in skill_lower:
+
+        return "Gemini API"
+
+    # DBMS
+    elif "dbms" in skill_lower:
+
+        return "DBMS"
+
+    # Data Structures
+    elif "data structures" in skill_lower:
+
+        return "Data Structures & Algorithms"
+
+    # Backend Development
+    elif "backend" in skill_lower:
+
+        return "Backend Development"
+
+    # Exception Handling
+    elif "exception handling" in skill_lower:
+
+        return "Exception Handling"
+
+    # Return original skill if no match
     return skill
 
 
-# Extract required and preferred skills from the job description
-def extract_job_skills(job_description):
-
-    required_skills = []
-    preferred_skills = []
-
-    lines = job_description.splitlines()
-    current_section = None
-
-    for line in lines:
-
-        line_lower = line.lower().strip()
-
-        if line_lower == "required skills:":
-            current_section = "required"
-
-        elif line_lower == "good to have:":
-            current_section = "preferred"
-
-        elif current_section and line.strip():
-
-            skill = clean_skill(line)
-
-            if current_section == "required":
-                required_skills.append(skill)
-
-            elif current_section == "preferred":
-                preferred_skills.append(skill)
-
-    return {
-        "required_skills": required_skills,
-        "preferred_skills": preferred_skills
-    }
-
-
-# Get the skills written inside the Skills section of the resume
+# -----------------------------
+# Extract skills from resume
+# -----------------------------
 def extract_resume_skills(text):
 
     sections = extract_sections(text)
@@ -160,140 +264,249 @@ def extract_resume_skills(text):
 
         line = line.strip()
 
-        if line:
-            skill = clean_skill(line)
-            skills.append(skill)
+        if not line:
+            continue
+
+        # Remove category name before colon
+        if ":" in line:
+
+            line = line.split(":", 1)[1]
+
+        # Split multiple skills
+        skill_list = line.split(",")
+
+        for skill in skill_list:
+
+            skill = skill.strip()
+
+            if skill:
+
+                skill = clean_skill(skill)
+
+                skills.append(skill)
 
     return skills
 
 
-# Compare resume skills with the skills required by the job
+# -----------------------------
+# Extract skills from job description
+# -----------------------------
+def extract_job_skills(job_description):
+
+    required_skills = []
+
+    preferred_skills = []
+
+    lines = job_description.splitlines()
+
+    current_section = None
+
+    for line in lines:
+
+        line = line.strip()
+
+        line_lower = line.lower()
+
+        # Remove bullet
+        line = line.lstrip("-•*").strip()
+
+        line_lower = line.lower()
+
+        if line_lower == "required skills:":
+
+            current_section = "required"
+
+            continue
+
+        elif line_lower in [
+            "good to have:",
+            "preferred skills:"
+        ]:
+
+            current_section = "preferred"
+
+            continue
+
+        elif line_lower in [
+            "education:",
+            "experience:"
+        ]:
+
+            current_section = None
+
+            continue
+
+        if current_section and line:
+
+            # A job requirement can contain multiple concepts
+            # such as "HTML and CSS basics"
+            if "html" in line_lower and "css" in line_lower:
+
+                required_skill = "HTML/CSS"
+
+            elif "git" in line_lower and "github" in line_lower:
+
+                required_skill = "Git/GitHub"
+
+            elif "pandas" in line_lower and "numpy" in line_lower:
+
+                # Add both separately
+                if current_section == "required":
+                    required_skills.append("Pandas")
+                    required_skills.append("NumPy")
+                else:
+                    preferred_skills.append("Pandas")
+                    preferred_skills.append("NumPy")
+
+                continue
+
+            elif (
+                "problem-solving" in line_lower
+                or "problem solving" in line_lower
+                or "debugging" in line_lower
+            ):
+
+                required_skill = "Problem-Solving & Debugging"
+
+            else:
+
+                required_skill = clean_skill(line)
+
+            if current_section == "required":
+
+                required_skills.append(required_skill)
+
+            elif current_section == "preferred":
+
+                preferred_skills.append(required_skill)
+
+    return {
+        "required_skills": required_skills,
+        "preferred_skills": preferred_skills
+    }
+
+
+# -----------------------------
+# Compare skills
+# -----------------------------
 def compare_skills(resume_skills, job_skills):
 
-    # Convert both lists into sets for easier comparison
     resume_set = set()
 
     for skill in resume_skills:
-        resume_set.add(skill.lower())
+
+        normalized_skill = clean_skill(skill)
+
+        resume_set.add(normalized_skill.lower())
+
 
     job_set = set()
 
     for skill in job_skills:
-        job_set.add(skill.lower())
 
-    # Skills that are present in both the resume and job description
+        normalized_skill = clean_skill(skill)
+
+        job_set.add(normalized_skill.lower())
+
+
     matched_skills = resume_set.intersection(job_set)
 
-    # Skills required by the job but missing from the resume
     missing_skills = job_set - resume_set
 
     return matched_skills, missing_skills
 
 
-# Main page
+# -----------------------------
+# Home route
+# -----------------------------
 @app.route("/", methods=["GET", "POST"])
 def home():
 
     if request.method == "POST":
 
-        # Get the job description entered by the user
-        job_description = request.form.get("job_description", "")
+        # Get job description
+        job_description = request.form.get(
+            "job_description",
+            ""
+        )
 
         if not job_description.strip():
+
             return "Please enter a job description."
 
-        job_description = clean_text(job_description)
 
-
-        # Get the uploaded resume
+        # Get uploaded resume
         resume = request.files.get("resume")
 
         if not resume or resume.filename == "":
+
             return "Please select a resume."
 
 
-        # Create the uploads folder if it doesn't already exist
+        # Create uploads folder
         os.makedirs("uploads", exist_ok=True)
 
-        file_path = os.path.join("uploads", resume.filename)
 
-        # Save the uploaded resume
+        # Save resume
+        file_path = os.path.join(
+            "uploads",
+            resume.filename
+        )
+
         resume.save(file_path)
 
         print("\nResume saved:", file_path)
 
 
-        # Read the uploaded PDF
+        # Read PDF
         reader = PdfReader(file_path)
 
         text = ""
 
-        # Extract text from every page of the resume
         for page in reader.pages:
 
             page_text = page.extract_text()
 
             if page_text:
+
                 text += page_text
 
 
-        # Clean the extracted resume text
+        # Clean resume text
         text = clean_text(text)
 
 
-        # Extract different sections from the resume
-        resume_sections = extract_sections(text)
+        # Extract job skills
+        job_skills = extract_job_skills(
+            job_description
+        )
 
 
-        # Extract required and preferred skills from the JD
-        job_skills = extract_job_skills(job_description)
+        # Extract resume skills
+        resume_skills = extract_resume_skills(
+            text
+        )
 
 
-        # Extract skills from the resume
-        resume_skills = extract_resume_skills(text)
-
-
-        # Compare resume skills with required job skills
+        # Compare skills
         matched_skills, missing_skills = compare_skills(
             resume_skills,
             job_skills["required_skills"]
         )
 
 
-        # Print the results in the terminal
-        print("\n========== JOB DESCRIPTION ==========")
-        print(job_description)
-
-
-        print("\n========== RESUME TEXT ==========")
-        print(text)
-
-
-        print("\n========== RESUME SECTIONS ==========")
-
-        for section, content in resume_sections.items():
-
-            print(f"\n--- {section.upper()} ---")
-            print(content)
-
-
-        print("\n========== JOB SKILLS ==========")
-
-        print("\nRequired Skills:")
-
-        for skill in job_skills["required_skills"]:
-            print(skill)
-
-
-        print("\nPreferred Skills:")
-
-        for skill in job_skills["preferred_skills"]:
-            print(skill)
-
-
+        # Print results for testing
         print("\n========== RESUME SKILLS ==========")
 
         for skill in resume_skills:
+
+            print(skill)
+
+
+        print("\n========== JOB REQUIRED SKILLS ==========")
+
+        for skill in job_skills["required_skills"]:
+
             print(skill)
 
 
@@ -302,21 +515,35 @@ def home():
         print("\nMatched Skills:")
 
         for skill in matched_skills:
+
             print(skill)
 
 
         print("\nMissing Skills:")
 
         for skill in missing_skills:
+
             print(skill)
 
 
         print("\n====================================")
 
 
+        # Show results page
+        return render_template(
+            "results.html",
+            matched_skills=sorted(matched_skills),
+            missing_skills=sorted(missing_skills)
+        )
+
+
+    # GET request
     return render_template("index.html")
 
 
-# Start the Flask application
+# -----------------------------
+# Run Flask
+# -----------------------------
 if __name__ == "__main__":
+
     app.run(debug=True)
