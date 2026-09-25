@@ -5,13 +5,10 @@ import os
 app = Flask(__name__)
 
 
-# -------------------------------
-# Clean Text
-# -------------------------------
+# Clean the extracted text by removing empty lines and extra spaces
 def clean_text(text):
 
     lines = text.splitlines()
-
     cleaned_lines = []
 
     for line in lines:
@@ -23,9 +20,7 @@ def clean_text(text):
     return "\n".join(cleaned_lines)
 
 
-# -------------------------------
-# Extract Resume Sections
-# -------------------------------
+# Extract the important sections from the resume
 def extract_sections(text):
 
     sections = {
@@ -37,7 +32,6 @@ def extract_sections(text):
     }
 
     current_section = None
-
     lines = text.splitlines()
 
     for line in lines:
@@ -64,15 +58,19 @@ def extract_sections(text):
 
     return sections
 
+
+# Clean individual skill names so they can be compared easily
 def clean_skill(skill):
 
     skill = skill.strip()
 
+    # Remove the '-' from bullet points
     if skill.startswith("-"):
         skill = skill[1:].strip()
 
     skill_lower = skill.lower()
 
+    # Convert different descriptions into common skill names
     if "python" in skill_lower:
         return "Python"
 
@@ -112,16 +110,13 @@ def clean_skill(skill):
     return skill
 
 
-# -------------------------------
-# Extract Job Skills
-# -------------------------------
+# Extract required and preferred skills from the job description
 def extract_job_skills(job_description):
 
     required_skills = []
     preferred_skills = []
 
     lines = job_description.splitlines()
-
     current_section = None
 
     for line in lines:
@@ -150,59 +145,90 @@ def extract_job_skills(job_description):
     }
 
 
-# -------------------------------
-# Home Route
-# -------------------------------
+# Get the skills written inside the Skills section of the resume
+def extract_resume_skills(text):
+
+    sections = extract_sections(text)
+
+    skills_text = sections["skills"]
+
+    skills = []
+
+    lines = skills_text.splitlines()
+
+    for line in lines:
+
+        line = line.strip()
+
+        if line:
+            skill = clean_skill(line)
+            skills.append(skill)
+
+    return skills
+
+
+# Compare resume skills with the skills required by the job
+def compare_skills(resume_skills, job_skills):
+
+    # Convert both lists into sets for easier comparison
+    resume_set = set()
+
+    for skill in resume_skills:
+        resume_set.add(skill.lower())
+
+    job_set = set()
+
+    for skill in job_skills:
+        job_set.add(skill.lower())
+
+    # Skills that are present in both the resume and job description
+    matched_skills = resume_set.intersection(job_set)
+
+    # Skills required by the job but missing from the resume
+    missing_skills = job_set - resume_set
+
+    return matched_skills, missing_skills
+
+
+# Main page
 @app.route("/", methods=["GET", "POST"])
 def home():
 
     if request.method == "POST":
 
-        # Debug: See what the browser sends
-        print("\n========== FORM DATA ==========")
-        print(request.form)
-
-        # Get Job Description
+        # Get the job description entered by the user
         job_description = request.form.get("job_description", "")
 
-        print("\n========== JOB DESCRIPTION ==========")
-        print(job_description)
-
-        # Check Job Description
         if not job_description.strip():
             return "Please enter a job description."
 
-        # Clean Job Description
         job_description = clean_text(job_description)
 
 
-        # Get Resume
+        # Get the uploaded resume
         resume = request.files.get("resume")
 
         if not resume or resume.filename == "":
             return "Please select a resume."
 
 
-        # Create uploads folder
+        # Create the uploads folder if it doesn't already exist
         os.makedirs("uploads", exist_ok=True)
 
-
-        # Save Resume
         file_path = os.path.join("uploads", resume.filename)
 
+        # Save the uploaded resume
         resume.save(file_path)
 
         print("\nResume saved:", file_path)
 
 
-        # -------------------------------
-        # Read PDF
-        # -------------------------------
-
+        # Read the uploaded PDF
         reader = PdfReader(file_path)
 
         text = ""
 
+        # Extract text from every page of the resume
         for page in reader.pages:
 
             page_text = page.extract_text()
@@ -211,27 +237,33 @@ def home():
                 text += page_text
 
 
-        # Clean Resume Text
+        # Clean the extracted resume text
         text = clean_text(text)
 
 
-        # -------------------------------
-        # Extract Resume Sections
-        # -------------------------------
-
+        # Extract different sections from the resume
         resume_sections = extract_sections(text)
 
 
-        # -------------------------------
-        # Extract Job Skills
-        # -------------------------------
-
+        # Extract required and preferred skills from the JD
         job_skills = extract_job_skills(job_description)
 
 
-        # -------------------------------
-        # Display Results in Terminal
-        # -------------------------------
+        # Extract skills from the resume
+        resume_skills = extract_resume_skills(text)
+
+
+        # Compare resume skills with required job skills
+        matched_skills, missing_skills = compare_skills(
+            resume_skills,
+            job_skills["required_skills"]
+        )
+
+
+        # Print the results in the terminal
+        print("\n========== JOB DESCRIPTION ==========")
+        print(job_description)
+
 
         print("\n========== RESUME TEXT ==========")
         print(text)
@@ -259,14 +291,32 @@ def home():
             print(skill)
 
 
+        print("\n========== RESUME SKILLS ==========")
+
+        for skill in resume_skills:
+            print(skill)
+
+
+        print("\n========== SKILL MATCHING ==========")
+
+        print("\nMatched Skills:")
+
+        for skill in matched_skills:
+            print(skill)
+
+
+        print("\nMissing Skills:")
+
+        for skill in missing_skills:
+            print(skill)
+
+
         print("\n====================================")
 
 
     return render_template("index.html")
 
 
-# -------------------------------
-# Run Application
-# -------------------------------
+# Start the Flask application
 if __name__ == "__main__":
     app.run(debug=True)
