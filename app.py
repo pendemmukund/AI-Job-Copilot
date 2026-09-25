@@ -64,6 +64,53 @@ def extract_sections(text):
 
     return sections
 
+def clean_skill(skill):
+
+    skill = skill.strip()
+
+    if skill.startswith("-"):
+        skill = skill[1:].strip()
+
+    skill_lower = skill.lower()
+
+    if "python" in skill_lower:
+        return "Python"
+
+    elif "flask" in skill_lower:
+        return "Flask"
+
+    elif "sql" in skill_lower:
+        return "SQL"
+
+    elif "git" in skill_lower and "github" in skill_lower:
+        return "Git/GitHub"
+
+    elif "object-oriented" in skill_lower:
+        return "OOP"
+
+    elif "rest" in skill_lower:
+        return "REST API"
+
+    elif "html" in skill_lower and "css" in skill_lower:
+        return "HTML/CSS"
+
+    elif "javascript" in skill_lower:
+        return "JavaScript"
+
+    elif "pandas" in skill_lower:
+        return "Pandas"
+
+    elif "numpy" in skill_lower:
+        return "NumPy"
+
+    elif "machine learning" in skill_lower:
+        return "Machine Learning"
+
+    elif "llm" in skill_lower:
+        return "LLM APIs"
+
+    return skill
+
 
 # -------------------------------
 # Extract Job Skills
@@ -89,11 +136,13 @@ def extract_job_skills(job_description):
 
         elif current_section and line.strip():
 
+            skill = clean_skill(line)
+
             if current_section == "required":
-                required_skills.append(line.strip())
+                required_skills.append(skill)
 
             elif current_section == "preferred":
-                preferred_skills.append(line.strip())
+                preferred_skills.append(skill)
 
     return {
         "required_skills": required_skills,
