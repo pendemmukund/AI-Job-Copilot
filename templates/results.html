@@ -1,11 +1,8 @@
 <!doctype html>
-
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title>Job Analysis Results</title>
 
     <link
@@ -18,57 +15,51 @@
     <div class="container">
       <h1>Job Analysis Results</h1>
 
-      <p>
-        Your resume matches
-        <strong>{{ match_percentage }}%</strong>
-        of the required skills.
-      </p>
+      <!-- Skill Match Percentage -->
+      <div class="match-box">
+        <h2>Skill Match</h2>
 
-      <h2>Skill Match</h2>
+        <p>
+          Your resume matches
+          <strong>{{ match_percentage }}%</strong>
+          of the required skills.
+        </p>
+      </div>
 
       <!-- Matched Skills -->
+      <div class="skills-section">
+        <h2>Matched Skills</h2>
 
-      <h2>Matched Skills</h2>
-
-      {% if matched_skills %}
-
-      <ul>
-        {% for skill in matched_skills %}
-
-        <li>✓ {{ skill }}</li>
-
-        {% endfor %}
-      </ul>
-
-      {% else %}
-
-      <p>No matching skills found.</p>
-
-      {% endif %}
+        {% if matched_skills %}
+        <ul>
+          {% for skill in matched_skills %}
+          <li>✓ {{ skill }}</li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p>No matching skills found.</p>
+        {% endif %}
+      </div>
 
       <!-- Missing Skills -->
+      <div class="skills-section">
+        <h2>Missing Skills</h2>
 
-      <h2>Missing Skills</h2>
+        {% if missing_skills %}
+        <ul>
+          {% for skill in missing_skills %}
+          <li>✗ {{ skill }}</li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p>No required skills are missing.</p>
+        {% endif %}
+      </div>
 
-      {% if missing_skills %}
-
-      <ul>
-        {% for skill in missing_skills %}
-
-        <li>✗ {{ skill }}</li>
-
-        {% endfor %}
-      </ul>
-
-      {% else %}
-
-      <p>No required skills are missing.</p>
-
-      {% endif %}
-
+      <!-- Analyze Another Job -->
       <br />
 
-      <a href="/"> Analyze Another Job </a>
+      <a href="/">Analyze Another Job</a>
     </div>
   </body>
 </html>
