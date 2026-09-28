@@ -415,6 +415,15 @@ def compare_skills(resume_skills, job_skills):
 
     return matched_skills, missing_skills
 
+def calculate_match_percentage(matched_skills, job_skills):
+
+    if len(job_skills) == 0:
+        return 0
+
+    percentage = (len(matched_skills) / len(job_skills)) * 100
+
+    return round(percentage, 2)
+
 
 # -----------------------------
 # Home route
@@ -494,6 +503,11 @@ def home():
             job_skills["required_skills"]
         )
 
+        match_percentage = calculate_match_percentage(
+            matched_skills,
+            job_skills["required_skills"]
+        )
+
 
         # Print results for testing
         print("\n========== RESUME SKILLS ==========")
@@ -531,10 +545,11 @@ def home():
 
         # Show results page
         return render_template(
-            "results.html",
-            matched_skills=sorted(matched_skills),
-            missing_skills=sorted(missing_skills)
-        )
+          "results.html",
+          matched_skills=sorted(matched_skills),
+          missing_skills=sorted(missing_skills),
+          match_percentage=match_percentage
+      )
 
 
     # GET request
