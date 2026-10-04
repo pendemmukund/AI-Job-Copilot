@@ -484,6 +484,14 @@ def calculate_match_percentage(
 
     return round(percentage, 2)
 
+def get_match_strength(match_percentage):
+    if match_percentage >= 80:
+        return "Strong Match"
+    elif match_percentage >= 50:
+        return "Moderate Match"
+    else:
+        return "Weak Match"
+
 
 # -----------------------------
 # Home route
@@ -580,6 +588,8 @@ def home():
             job_skills["required_skills"]
         )
 
+        match_strength = get_match_strength(match_percentage)
+
 
         # Print resume skills
         print(
@@ -636,13 +646,10 @@ def home():
         # Send results to HTML
         return render_template(
             "results.html",
-            matched_skills=sorted(
-                matched_skills
-            ),
-            missing_skills=sorted(
-                missing_skills
-            ),
-            match_percentage=match_percentage
+            matched_skills=sorted(matched_skills),
+            missing_skills=sorted(missing_skills),
+            match_percentage=match_percentage,
+            match_strength=match_strength
         )
 
 
