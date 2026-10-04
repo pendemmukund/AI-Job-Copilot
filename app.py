@@ -328,117 +328,96 @@ def extract_resume_skills(text):
 # Extract skills from job description
 # -----------------------------
 def extract_job_skills(job_description):
-
     required_skills = []
-
     preferred_skills = []
 
     lines = job_description.splitlines()
-
     current_section = None
 
     for line in lines:
-
         line = line.strip()
-
-        # Remove bullet
         line = line.lstrip("-•*").strip()
+
+        if not line:
+            continue
 
         line_lower = line.lower()
 
-
-        # Required skills section
+        # Detect the required skills section
         if line_lower == "required skills:":
-
             current_section = "required"
-
             continue
 
-
-        # Preferred skills section
-        elif line_lower in [
-            "good to have:",
-            "preferred skills:"
-        ]:
-
+        # Detect the preferred skills section
+        elif line_lower in ["good to have:", "preferred skills:"]:
             current_section = "preferred"
-
             continue
 
-
-        # Stop reading skills
-        elif line_lower in [
-            "education:",
-            "experience:"
-        ]:
-
+        # Stop reading skills after these sections
+        elif line_lower in ["education:", "experience:"]:
             current_section = None
-
             continue
 
+        if current_section:
+            skills_found = []
 
-        if current_section and line:
+            # Check for common skills
+            if "python" in line_lower:
+                skills_found.append("Python")
 
-            # HTML + CSS
-            if (
-                "html" in line_lower
-                and "css" in line_lower
-            ):
+            if "flask" in line_lower:
+                skills_found.append("Flask")
 
-                required_skill = "HTML/CSS"
+            if "sql" in line_lower:
+                skills_found.append("SQL")
 
+            if "rest api" in line_lower or "rest apis" in line_lower:
+                skills_found.append("REST API")
 
-            # Git + GitHub
-            elif (
-                "git" in line_lower
-                and "github" in line_lower
-            ):
+            if "html" in line_lower and "css" in line_lower:
+                skills_found.append("HTML/CSS")
 
-                required_skill = "Git/GitHub"
+            if "git" in line_lower and "github" in line_lower:
+                skills_found.append("Git/GitHub")
 
+            if "object-oriented" in line_lower or "object oriented" in line_lower:
+                skills_found.append("OOP")
 
-            # Pandas + NumPy
-            elif (
-                "pandas" in line_lower
-                and "numpy" in line_lower
-            ):
+            if "problem-solving" in line_lower or "problem solving" in line_lower:
+                skills_found.append("Problem-Solving & Debugging")
 
-                if current_section == "required":
+            if "debugging" in line_lower:
+                if "Problem-Solving & Debugging" not in skills_found:
+                    skills_found.append("Problem-Solving & Debugging")
 
-                    required_skills.append("Pandas")
-                    required_skills.append("NumPy")
+            if "pandas" in line_lower:
+                skills_found.append("Pandas")
 
-                else:
+            if "numpy" in line_lower:
+                skills_found.append("NumPy")
 
-                    preferred_skills.append("Pandas")
-                    preferred_skills.append("NumPy")
+            if "machine learning" in line_lower:
+                skills_found.append("Machine Learning")
 
-                continue
+            if "ai" in line_lower:
+                skills_found.append("AI")
 
+            if "llm" in line_lower:
+                skills_found.append("LLM APIs")
 
-            # Problem solving + debugging
-            elif (
-                "problem-solving" in line_lower
-                or "problem solving" in line_lower
-                or "debugging" in line_lower
-            ):
+            if "javascript" in line_lower:
+                skills_found.append("JavaScript")
 
-                required_skill = "Problem-Solving & Debugging"
-
-
-            else:
-
-                required_skill = clean_skill(line)
-
-
+            # Add skills to the correct section
             if current_section == "required":
-
-                required_skills.append(required_skill)
+                required_skills.extend(skills_found)
 
             elif current_section == "preferred":
+                preferred_skills.extend(skills_found)
 
-                preferred_skills.append(required_skill)
-
+    # Remove duplicate skills
+    required_skills = list(set(required_skills))
+    preferred_skills = list(set(preferred_skills))
 
     return {
         "required_skills": required_skills,
