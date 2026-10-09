@@ -16,6 +16,7 @@
     <div class="container">
       <h1>Job Analysis Results</h1>
 
+      <!-- Skill Match Percentage -->
       <div class="match-box">
         <h2>Skill Match</h2>
 
@@ -31,6 +32,7 @@
         </p>
       </div>
 
+      <!-- Matched Required Skills -->
       <div class="skills-section">
         <h2>Matched Skills</h2>
 
@@ -45,6 +47,7 @@
         {% endif %}
       </div>
 
+      <!-- Missing Required Skills -->
       <div class="skills-section">
         <h2>Missing Skills</h2>
 
@@ -59,6 +62,38 @@
         {% endif %}
       </div>
 
+      <!-- Preferred Skills -->
+      <div class="skills-section">
+        <h2>Preferred Skills</h2>
+
+        <h3>Skills You Already Have</h3>
+
+        {% if matched_preferred_skills %}
+        <ul>
+          {% for skill in matched_preferred_skills %}
+          <li>✓ {{ skill }}</li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p>No preferred skills matched.</p>
+        {% endif %}
+
+        <h3>Skills You Could Learn Next</h3>
+
+        {% if missing_preferred_skills %}
+        <ul>
+          {% for skill in missing_preferred_skills %}
+          <li>＋ {{ skill }}</li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p>
+          You have all the preferred skills detected in this job description.
+        </p>
+        {% endif %}
+      </div>
+
+      <!-- AI Career Analysis -->
       <div class="ai-analysis">
         <h2>AI Career Analysis</h2>
 

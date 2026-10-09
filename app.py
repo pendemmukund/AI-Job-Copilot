@@ -9,16 +9,15 @@ import re
 app = Flask(__name__)
 
 UPLOAD_FOLDER = "uploads"
-ALLOWED_EXTENSIONS = {"pdf"}
 
 
-# Clean the extracted text
+# Clean extracted resume text
 def clean_text(text):
-    lines = text.splitlines()
     cleaned_lines = []
 
-    for line in lines:
+    for line in text.splitlines():
         line = line.strip()
+
         if line:
             cleaned_lines.append(line)
 
@@ -49,23 +48,21 @@ def extract_sections(text):
     current_section = None
 
     for line in text.splitlines():
-        line = line.strip()
-        line_lower = line.lower().rstrip(":")
+        line_lower = line.strip().lower().rstrip(":")
 
         if line_lower in section_headers:
             current_section = section_headers[line_lower]
             continue
 
-        if current_section and line:
-            sections[current_section] += line + "\n"
+        if current_section:
+            sections[current_section] += line.strip() + "\n"
 
     return sections
 
 
-# Normalize different names for the same skill
+# Normalize skill names
 def clean_skill(skill):
-    skill = skill.strip()
-    skill = skill.lstrip("-•*").strip()
+    skill = skill.strip().lstrip("-•*").strip()
     skill_lower = skill.lower()
 
     if re.search(r"\bpython\b", skill_lower):
@@ -126,9 +123,6 @@ def clean_skill(skill):
     elif "machine learning" in skill_lower:
         return "Machine Learning"
 
-    elif re.search(r"\bllm\b", skill_lower):
-        return "LLM APIs"
-
     elif re.search(r"\bjavascript\b", skill_lower):
         return "JavaScript"
 
@@ -159,11 +153,14 @@ def clean_skill(skill):
     elif "exception handling" in skill_lower:
         return "Exception Handling"
 
-    elif re.search(r"\bartificial intelligence\b", skill_lower):
+    elif "artificial intelligence" in skill_lower:
         return "AI"
 
     elif re.search(r"\bai\b", skill_lower):
         return "AI"
+
+    elif re.search(r"\bllm\b", skill_lower):
+        return "LLM APIs"
 
     return skill
 
@@ -181,7 +178,7 @@ def extract_resume_skills(text):
         if not line:
             continue
 
-        # Remove category labels such as "Languages:"
+        # Remove labels such as "Languages:" or "Frameworks:"
         if ":" in line:
             line = line.split(":", 1)[1]
 
@@ -194,7 +191,7 @@ def extract_resume_skills(text):
     return list(dict.fromkeys(skills))
 
 
-# Find known skills mentioned in a job-description line
+# Extract known skills from a job-description line
 def extract_skills_from_line(line):
     line_lower = line.lower()
     skills = []
@@ -204,11 +201,22 @@ def extract_skills_from_line(line):
         (r"\bflask\b", "Flask"),
         (r"\bsql\b", "SQL"),
         (r"\brest\s+apis?\b", "REST API"),
-        (r"\bhtml\b.*\bcss\b|\bcss\b.*\bhtml\b", "HTML/CSS"),
-        (r"\bgit\b.*\bgithub\b|\bgithub\b.*\bgit\b", "Git/GitHub"),
-        (r"\bobject[- ]oriented\b|\boop\b", "OOP"),
-        (r"\bproblem[- ]solving\b|\bdebugging\b",
-         "Problem-Solving & Debugging"),
+        (
+            r"\bhtml\b.*\bcss\b|\bcss\b.*\bhtml\b",
+            "HTML/CSS"
+        ),
+        (
+            r"\bgit\b.*\bgithub\b|\bgithub\b.*\bgit\b",
+            "Git/GitHub"
+        ),
+        (
+            r"\bobject[- ]oriented\b|\boop\b",
+            "OOP"
+        ),
+        (
+            r"\bproblem[- ]solving\b|\bdebugging\b",
+            "Problem-Solving & Debugging"
+        ),
         (r"\bpandas\b", "Pandas"),
         (r"\bnumpy\b", "NumPy"),
         (r"\bmatplotlib\b", "Matplotlib"),
@@ -218,10 +226,19 @@ def extract_skills_from_line(line):
         (r"\bmysql\b", "MySQL"),
         (r"\bsqlite\b", "SQLite"),
         (r"\bdbms\b", "DBMS"),
-        (r"\bdata structures\b", "Data Structures & Algorithms"),
+        (
+            r"\bdata structures\b",
+            "Data Structures & Algorithms"
+        ),
         (r"\bbackend\b", "Backend Development"),
-        (r"\bexception handling\b", "Exception Handling"),
-        (r"\bartificial intelligence\b|\bai\b", "AI"),
+        (
+            r"\bexception handling\b",
+            "Exception Handling"
+        ),
+        (
+            r"\bartificial intelligence\b|\bai\b",
+            "AI"
+        ),
         (r"\bllm\b", "LLM APIs")
     ]
 
@@ -229,19 +246,17 @@ def extract_skills_from_line(line):
         if re.search(pattern, line_lower):
             skills.append(skill_name)
 
-    # Use normalization for other individual skill names
+    # Normalize a line if no known skill was detected
     if not skills:
         normalized = clean_skill(line)
 
         if normalized != line:
             skills.append(normalized)
-        elif line:
-            skills.append(line.strip())
 
     return list(dict.fromkeys(skills))
 
 
-# Extract required and preferred skills from the job description
+# Extract required and preferred job skills
 def extract_job_skills(job_description):
     required_skills = []
     preferred_skills = []
@@ -279,10 +294,14 @@ def extract_job_skills(job_description):
             continue
 
         if current_section == "required":
-            required_skills.extend(extract_skills_from_line(line))
+            required_skills.extend(
+                extract_skills_from_line(line)
+            )
 
         elif current_section == "preferred":
-            preferred_skills.extend(extract_skills_from_line(line))
+            preferred_skills.extend(
+                extract_skills_from_line(line)
+            )
 
     return {
         "required_skills": list(dict.fromkeys(required_skills)),
@@ -290,36 +309,27 @@ def extract_job_skills(job_description):
     }
 
 
-# Compare resume skills with job requirements
+# Compare resume skills with a list of job skills
 def compare_skills(resume_skills, job_skills):
-    resume_set = {
-        clean_skill(skill).lower()
+    resume_map = {
+        clean_skill(skill).lower(): clean_skill(skill)
         for skill in resume_skills
     }
 
-    job_set = {
-        clean_skill(skill).lower()
+    job_map = {
+        clean_skill(skill).lower(): clean_skill(skill)
         for skill in job_skills
     }
 
-    matched_skills = resume_set.intersection(job_set)
-    missing_skills = job_set - resume_set
-
-    # Convert results back to readable skill names
-    display_names = {}
-
-    for skill in resume_skills + job_skills:
-        normalized = clean_skill(skill).lower()
-        display_names[normalized] = clean_skill(skill)
+    matched_keys = set(resume_map).intersection(job_map)
+    missing_keys = set(job_map) - set(resume_map)
 
     matched_skills = {
-        display_names.get(skill, skill.title())
-        for skill in matched_skills
+        job_map[key] for key in matched_keys
     }
 
     missing_skills = {
-        display_names.get(skill, skill.title())
-        for skill in missing_skills
+        job_map[key] for key in missing_keys
     }
 
     return matched_skills, missing_skills
@@ -335,19 +345,23 @@ def calculate_match_percentage(matched_skills, job_skills):
     if not unique_job_skills:
         return 0
 
-    matched = {
+    matched_keys = {
         clean_skill(skill).lower()
         for skill in matched_skills
     }
 
-    matched_count = len(matched.intersection(unique_job_skills))
+    matched_count = len(
+        matched_keys.intersection(unique_job_skills)
+    )
 
-    percentage = (matched_count / len(unique_job_skills)) * 100
+    percentage = (
+        matched_count / len(unique_job_skills)
+    ) * 100
 
     return round(percentage, 2)
 
 
-# Classify the match strength
+# Classify resume strength
 def get_match_strength(match_percentage):
     if match_percentage >= 80:
         return "Strong Match"
@@ -358,31 +372,48 @@ def get_match_strength(match_percentage):
     return "Weak Match"
 
 
-# Generate career analysis using local Ollama
+# Generate AI career analysis using local Ollama
 
 def generate_ai_analysis(
     matched_skills,
     missing_skills,
-    match_percentage
+    match_percentage,
+    matched_preferred_skills,
+    missing_preferred_skills
 ):
     prompt = f"""
-You are a career assistant helping a fresher prepare for a job.
+You are a career advisor helping a fresher prepare for a job.
 
-Skill match percentage: {match_percentage}%
+Required-skill match: {match_percentage}%
 
-Matched skills:
+Matched required skills:
 {", ".join(sorted(matched_skills)) or "None"}
 
-Missing skills:
+Missing required skills:
 {", ".join(sorted(missing_skills)) or "None"}
 
-Provide a concise analysis with these sections:
-1. Overall assessment
-2. Strong areas
-3. Skills to improve
-4. One practical recommendation
+Preferred skills already present:
+{", ".join(sorted(matched_preferred_skills)) or "None"}
 
-Use simple language. Do not invent skills the candidate has.
+Missing preferred skills:
+{", ".join(sorted(missing_preferred_skills)) or "None"}
+
+Write a practical career analysis for this candidate.
+
+Include these sections:
+1. Overall Assessment
+2. Existing Strengths
+3. Priority Skills to Improve
+4. Recommended Learning Order
+5. One Practical Next Step
+
+Rules:
+- Prioritize missing required skills over preferred skills.
+- Treat preferred skills as optional.
+- Recommend only skills listed above.
+- Do not claim the candidate has skills that are missing.
+- Use simple language suitable for a fresher.
+- Keep the response concise and specific.
 """
 
     try:
@@ -393,34 +424,23 @@ Use simple language. Do not invent skills the candidate has.
                     "role": "user",
                     "content": prompt
                 }
-            ],
+            ]
         )
 
         analysis = response["message"]["content"].strip()
 
-        if not analysis:
-            return (
-                "AI analysis returned an empty response. "
-                "Please try again."
-            )
+        if analysis:
+            return analysis
 
-        return analysis
-
-    except ollama.ResponseError as error:
-        print("Ollama model error:", error)
-
-        return (
-            "AI analysis is temporarily unavailable. "
-            "Please check that the llama3.2 model is installed."
-        )
+        return "The AI returned an empty response. Please try again."
 
     except Exception as error:
-        print("AI analysis error:", error)
+        print("Ollama error:", error)
 
         return (
-            "AI analysis could not be generated. "
-            "Your skill-matching results are still available. "
-            "Please ensure Ollama is running and try again."
+            "AI recommendations are temporarily unavailable. "
+            "Please ensure Ollama is running and try again. "
+            "Your skill-matching results are still available."
         )
 
 
@@ -430,6 +450,7 @@ Use simple language. Do not invent skills the candidate has.
 def home():
     if request.method == "POST":
 
+        # Get job description
         job_description = request.form.get(
             "job_description", ""
         )
@@ -437,6 +458,7 @@ def home():
         if not job_description.strip():
             return "Please enter a job description.", 400
 
+        # Get uploaded resume
         resume = request.files.get("resume")
 
         if not resume or not resume.filename:
@@ -447,14 +469,15 @@ def home():
         if not filename.lower().endswith(".pdf"):
             return "Please upload a PDF resume.", 400
 
+        # Save resume
         os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         resume.save(file_path)
 
+        # Extract text from PDF
         try:
             reader = PdfReader(file_path)
-
             extracted_text = ""
 
             for page in reader.pages:
@@ -465,6 +488,7 @@ def home():
 
         except Exception as error:
             print("PDF reading error:", error)
+
             return (
                 "Unable to read this PDF. "
                 "Please upload a valid PDF resume.",
@@ -480,41 +504,58 @@ def home():
                 400
             )
 
-        # Extract resume and job skills
+        # 1. Extract resume and job skills
         resume_skills = extract_resume_skills(extracted_text)
         job_skills = extract_job_skills(job_description)
 
         required_skills = job_skills["required_skills"]
+        preferred_skills = job_skills["preferred_skills"]
 
-        # Compare skills
+        # 2. Compare required skills
         matched_skills, missing_skills = compare_skills(
             resume_skills,
             required_skills
         )
 
-        # Calculate score and strength
+        # 3. Compare preferred skills
+        matched_preferred_skills, missing_preferred_skills = (
+            compare_skills(
+                resume_skills,
+                preferred_skills
+            )
+        )
+
+        # 4. Calculate percentage using required skills only
         match_percentage = calculate_match_percentage(
             matched_skills,
             required_skills
         )
 
+        # 5. Calculate resume strength
         match_strength = get_match_strength(match_percentage)
 
-        # Generate local AI analysis
+        # 6. Generate AI analysis
         ai_analysis = generate_ai_analysis(
             matched_skills,
             missing_skills,
-            match_percentage
+            match_percentage,
+            matched_preferred_skills,
+            missing_preferred_skills
         )
-
-        # Display the results
+        # 7. Render results only after all variables are assigned
         return render_template(
             "results.html",
             matched_skills=sorted(matched_skills),
             missing_skills=sorted(missing_skills),
             match_percentage=match_percentage,
             match_strength=match_strength,
-            ai_analysis=ai_analysis
+            ai_analysis=ai_analysis,
+            matched_preferred_skills=sorted(
+                matched_preferred_skills
+            ),
+            missing_preferred_skills=sorted(
+                missing_preferred_skills
+            )
         )
 
     return render_template("index.html")
