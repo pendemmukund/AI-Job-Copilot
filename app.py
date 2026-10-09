@@ -359,6 +359,7 @@ def get_match_strength(match_percentage):
 
 
 # Generate career analysis using local Ollama
+
 def generate_ai_analysis(
     matched_skills,
     missing_skills,
@@ -381,9 +382,7 @@ Provide a concise analysis with these sections:
 3. Skills to improve
 4. One practical recommendation
 
-Use simple language.
-Do not invent skills the candidate has.
-Do not guarantee that the candidate will get the job.
+Use simple language. Do not invent skills the candidate has.
 """
 
     try:
@@ -394,20 +393,36 @@ Do not guarantee that the candidate will get the job.
                     "role": "user",
                     "content": prompt
                 }
-            ]
+            ],
         )
 
-        return response["message"]["content"]
+        analysis = response["message"]["content"].strip()
 
-    except Exception as error:
-        print("Ollama error:", error)
+        if not analysis:
+            return (
+                "AI analysis returned an empty response. "
+                "Please try again."
+            )
+
+        return analysis
+
+    except ollama.ResponseError as error:
+        print("Ollama model error:", error)
 
         return (
-            "AI analysis is currently unavailable. "
-            "Please ensure Ollama is running and the "
-            "llama3.2 model is installed. "
-            "Your skill-matching results are still available."
+            "AI analysis is temporarily unavailable. "
+            "Please check that the llama3.2 model is installed."
         )
+
+    except Exception as error:
+        print("AI analysis error:", error)
+
+        return (
+            "AI analysis could not be generated. "
+            "Your skill-matching results are still available. "
+            "Please ensure Ollama is running and try again."
+        )
+
 
 
 # Main Flask route
