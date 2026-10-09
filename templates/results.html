@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>Job Analysis Results</title>
 
     <link
@@ -15,7 +16,6 @@
     <div class="container">
       <h1>Job Analysis Results</h1>
 
-      <!-- Skill Match Percentage -->
       <div class="match-box">
         <h2>Skill Match</h2>
 
@@ -31,7 +31,6 @@
         </p>
       </div>
 
-      <!-- Matched Skills -->
       <div class="skills-section">
         <h2>Matched Skills</h2>
 
@@ -46,7 +45,6 @@
         {% endif %}
       </div>
 
-      <!-- Missing Skills -->
       <div class="skills-section">
         <h2>Missing Skills</h2>
 
@@ -61,7 +59,12 @@
         {% endif %}
       </div>
 
-      <!-- Analyze Another Job -->
+      <div class="ai-analysis">
+        <h2>AI Career Analysis</h2>
+
+        <p>{{ ai_analysis }}</p>
+      </div>
+
       <br />
 
       <a href="/">Analyze Another Job</a>
