@@ -21,3 +21,23 @@ button {
   padding: 12px 20px;
   cursor: pointer;
 }
+
+.ai-analysis {
+  margin-top: 25px;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #f5f7fb;
+  border: 1px solid #dce3ed;
+}
+
+.ai-analysis h2 {
+  margin-top: 0;
+  color: #243b53;
+}
+
+.ai-analysis-content {
+  color: #334155;
+  line-height: 1.8;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
