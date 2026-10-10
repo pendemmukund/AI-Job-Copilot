@@ -26,17 +26,37 @@ I built this project to practise Python web development and learn how AI can be 
 
 ![Home Page](screenshots/home.png)
 
-### Skill Match Results
+### Resume Upload Page
 
-![Skill Match Results](screenshots/skill-analysis.png)
+![Resume Upload](screenshots/home2.png)
 
-### AI Career Analysis and Learning Roadmap
+### Skill Analysis Results
 
-![AI Career Analysis](screenshots/ai-analysis.png)
+![Skill Analysis](screenshots/skill_analysis.png)
+
+### Skill Analysis — Additional View
+
+![Skill Analysis Details](screenshots/skills_analysis.png)
+
+### Learning Roadmap
+
+![Learning Roadmap](screenshots/roadmap.png)
+
+### Learning Roadmap — Additional View
+
+![Learning Roadmap Details](screenshots/roadmap2.png)
+
+### Learning Roadmap — Further Details
+
+![Learning Roadmap More Details](screenshots/roadmap3.png)
+
+### Learning Roadmap — Final View
+
+![Learning Roadmap Final View](screenshots/roadmap4.png)
 
 ### Download Analysis Report
 
-![Download Report](screenshots/download-report.png)
+![Download Report](screenshots/download.png)
 
 ## 🛠️ Technologies Used
 
