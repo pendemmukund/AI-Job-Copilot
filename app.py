@@ -8,6 +8,9 @@ import os
 import re
 from flask import Flask, render_template, request, make_response
 
+import bleach
+
+
 app = Flask(__name__)
 
 UPLOAD_FOLDER = "uploads"
@@ -573,16 +576,38 @@ def home():
             missing_preferred_skills
         )
 
-        # 6. Generate AI analysis
+        # 6. Generate AI analysis        
         ai_analysis = generate_ai_analysis(
             matched_skills,
             missing_skills,
             match_percentage,
             matched_preferred_skills,
             missing_preferred_skills
-
-
         )
+
+        # Handle an empty AI response
+        if not ai_analysis or not ai_analysis.strip():
+            ai_analysis = (
+                "AI analysis is currently unavailable. "
+                "Please check that Ollama is running and try again."
+            )
+
+        # Convert Markdown into HTML and sanitize the generated HTML
+        allowed_tags = [
+            "p", "strong", "em", "ul", "ol", "li",
+            "h1", "h2", "h3", "h4", "blockquote",
+            "code", "pre", "br"
+        ]
+
+        ai_analysis_html = Markup(
+            bleach.clean(
+                markdown.markdown(ai_analysis),
+                tags=allowed_tags,
+                attributes={},
+                strip=True
+            )
+        )
+
 
         ai_analysis_html = Markup(
             markdown.markdown(ai_analysis)
@@ -595,7 +620,7 @@ def home():
             missing_skills=sorted(missing_skills),
             match_percentage=match_percentage,
             match_strength=match_strength,
-            aai_analysis=ai_analysis_html,
+            ai_analysis=ai_analysis_html,
             matched_preferred_skills=sorted(matched_preferred_skills),
             missing_preferred_skills=sorted(missing_preferred_skills),
             learning_roadmap=learning_roadmap

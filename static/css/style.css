@@ -208,3 +208,20 @@ a:hover {
   line-height: 1.7;
   margin: 0;
 }
+
+/* Download Report Button */
+form button[type="submit"] {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+form button[type="submit"]:hover {
+  background-color: #1d4ed8;
+}
