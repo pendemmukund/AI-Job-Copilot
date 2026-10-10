@@ -20,6 +20,24 @@ I built this project to practise Python web development and learn how AI can be 
 - Display a learning roadmap based on missing skills.
 - Download the job analysis report as a text file.
 
+## 📸 Screenshots
+
+### Home Page
+
+![Home Page](screenshots/home.png)
+
+### Skill Match Results
+
+![Skill Match Results](screenshots/skill-analysis.png)
+
+### AI Career Analysis and Learning Roadmap
+
+![AI Career Analysis](screenshots/ai-analysis.png)
+
+### Download Analysis Report
+
+![Download Report](screenshots/download-report.png)
+
 ## 🛠️ Technologies Used
 
 - **Python** – Main programming language.
