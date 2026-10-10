@@ -170,3 +170,41 @@ a:hover {
     width: 100%;
   }
 }
+
+/* Learning Roadmap */
+.roadmap-item {
+  background: #f8fafc;
+  border: 1px solid #dbe3ef;
+  border-left: 5px solid #2563eb;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.roadmap-item h3 {
+  color: #1e3a8a;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.roadmap-item p {
+  color: #475569;
+  line-height: 1.6;
+}
+
+.roadmap-item ul {
+  padding-left: 22px;
+}
+
+.roadmap-item li {
+  margin-bottom: 8px;
+  color: #334155;
+}
+.ai-analysis-content pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.7;
+  margin: 0;
+}

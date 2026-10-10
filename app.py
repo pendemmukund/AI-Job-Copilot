@@ -1,10 +1,12 @@
-
+import markdown
+from markupsafe import Markup
 from flask import Flask, render_template, request
 from PyPDF2 import PdfReader
 from werkzeug.utils import secure_filename
 import ollama
 import os
 import re
+from flask import Flask, render_template, request, make_response
 
 app = Flask(__name__)
 
@@ -371,6 +373,38 @@ def get_match_strength(match_percentage):
 
     return "Weak Match"
 
+def generate_learning_roadmap(missing_skills, missing_preferred_skills):
+    roadmap = []
+
+    priority_skills = sorted(missing_skills)
+    optional_skills = sorted(missing_preferred_skills)
+
+    if priority_skills:
+        roadmap.append({
+            "priority": "High",
+            "title": "Learn required skills",
+            "skills": priority_skills,
+            "description": "Focus on these skills first because they are required for the job."
+        })
+
+    if optional_skills:
+        roadmap.append({
+            "priority": "Medium",
+            "title": "Learn preferred skills",
+            "skills": optional_skills,
+            "description": "Study these after the required skills. They can strengthen your profile."
+        })
+
+    if not roadmap:
+        roadmap.append({
+            "priority": "Low",
+            "title": "Strengthen your existing skills",
+            "skills": [],
+            "description": "No missing skills were detected. Practise interview questions and build a project related to this role."
+        })
+
+    return roadmap
+
 
 # Generate AI career analysis using local Ollama
 
@@ -534,6 +568,11 @@ def home():
         # 5. Calculate resume strength
         match_strength = get_match_strength(match_percentage)
 
+        learning_roadmap = generate_learning_roadmap(
+            missing_skills,
+            missing_preferred_skills
+        )
+
         # 6. Generate AI analysis
         ai_analysis = generate_ai_analysis(
             matched_skills,
@@ -541,25 +580,48 @@ def home():
             match_percentage,
             matched_preferred_skills,
             missing_preferred_skills
+
+
+        )
+
+        ai_analysis_html = Markup(
+            markdown.markdown(ai_analysis)
         )
         # 7. Render results only after all variables are assigned
+        
         return render_template(
             "results.html",
             matched_skills=sorted(matched_skills),
             missing_skills=sorted(missing_skills),
             match_percentage=match_percentage,
             match_strength=match_strength,
-            ai_analysis=ai_analysis,
-            matched_preferred_skills=sorted(
-                matched_preferred_skills
-            ),
-            missing_preferred_skills=sorted(
-                missing_preferred_skills
-            )
+            aai_analysis=ai_analysis_html,
+            matched_preferred_skills=sorted(matched_preferred_skills),
+            missing_preferred_skills=sorted(missing_preferred_skills),
+            learning_roadmap=learning_roadmap
         )
+
 
     return render_template("index.html")
 
 
+@app.route("/download-report", methods=["POST"])
+def download_report():
+    report = request.form.get("report", "")
+
+    if not report.strip():
+        return "No report content available.", 400
+
+    response = make_response(report)
+    response.headers["Content-Type"] = "text/plain; charset=utf-8"
+    response.headers["Content-Disposition"] = (
+        "attachment; filename=job_analysis_report.txt"
+    )
+
+    return response
+
+
 if __name__ == "__main__":
     app.run(debug=True)
+
+

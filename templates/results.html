@@ -93,16 +93,95 @@
         {% endif %}
       </div>
 
+      <!-- Learning Roadmap -->
+      <div class="skills-section">
+        <h2>Your Learning Roadmap</h2>
+
+        {% for item in learning_roadmap %}
+        <div class="roadmap-item">
+          <h3>{{ item.priority }} Priority: {{ item.title }}</h3>
+          <p>{{ item.description }}</p>
+
+          {% if item.skills %}
+          <ul>
+            {% for skill in item.skills %}
+            <li>{{ skill }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
       <!-- AI Career Analysis -->
       <div class="ai-analysis">
         <h2>AI Career Analysis</h2>
 
-        <div class="ai-analysis-content">{{ ai_analysis }}</div>
+        <div class="ai-analysis-content">
+          <pre>{{ ai_analysis }}</pre>
+        </div>
+      </div>
+
+      <!-- Download Analysis Report -->
+      <div class="skills-section">
+        <h2>Download Your Report</h2>
+
+        <form action="{{ url_for('download_report') }}" method="POST">
+          <textarea name="report" hidden>
+JOB ANALYSIS REPORT
+
+Skill Match: {{ match_percentage }}%
+Resume Strength: {{ match_strength }}
+
+MATCHED REQUIRED SKILLS:
+{% for skill in matched_skills %}
+- {{ skill }}
+{% else %}
+- No matching required skills
+{% endfor %}
+
+MISSING REQUIRED SKILLS:
+{% for skill in missing_skills %}
+- {{ skill }}
+{% else %}
+- No missing required skills
+{% endfor %}
+
+MATCHED PREFERRED SKILLS:
+{% for skill in matched_preferred_skills %}
+- {{ skill }}
+{% else %}
+- No matching preferred skills
+{% endfor %}
+
+MISSING PREFERRED SKILLS:
+{% for skill in missing_preferred_skills %}
+- {{ skill }}
+{% else %}
+- No missing preferred skills
+{% endfor %}
+
+LEARNING ROADMAP:
+{% for item in learning_roadmap %}
+{{ item.priority }} Priority: {{ item.title }}
+{{ item.description }}
+{% for skill in item.skills %}
+- {{ skill }}
+{% endfor %}
+{% endfor %}
+
+AI CAREER ANALYSIS:
+{{ ai_analysis }}
+</textarea
+          >
+
+          <button type="submit">Download Analysis Report</button>
+        </form>
       </div>
 
       <br />
 
-      <a href="/">Analyze Another Job</a>
+      <a href="{{ url_for('home') }}">Analyze Another Job</a>
     </div>
   </body>
 </html>
